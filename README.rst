@@ -115,10 +115,46 @@ List of built-in Indicators (122)
 
   - `Indicators Reference <http://www.backtrader.com/docu/indautoref.html>`_
 
+Development and Dependency Management
+=====================================
+
+This project uses ``uv`` for fast and robust dependency management. The dependencies are defined in ``pyproject.toml`` and locked in ``uv.lock`` for reproducible builds.
+
+**Initial Setup**
+
+1. Ensure ``uv`` is installed. See the `uv installation guide <https://docs.astral.sh/uv/getting-started/installation/>`_.
+
+2. Create the virtual environment:
+   ::
+
+     uv venv
+
+3. Activate the environment and install dependencies:
+   ::
+
+     source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+     uv sync
+     uv pip install -e .
+
+**Managing Dependencies**
+
+- **Adding a dependency**: Use the ``uv add`` command. This will update ``pyproject.toml`` and ``uv.lock``.
+  ::
+
+    uv add <package-name>
+
+- **Updating all dependencies**: To upgrade all packages to their latest compatible versions:
+  ::
+
+    uv lock --upgrade
+    uv sync
+
+  After updating, you should commit the changes to ``uv.lock`` to your version control.
+
 Python 2/3 Support
 ==================
 
-  - Python >= ``3.2``
+  - Python >= ``3.11``
 
   - It also works with ``pypy`` and ``pypy3`` (no plotting - ``matplotlib`` is
     not supported under *pypy*)

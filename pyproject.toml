@@ -1,0 +1,30 @@
+[project]
+name = "backtrader"
+version = "0.1.0"
+description = "Python Backtesting library for trading strategies"
+readme = "README.rst"
+requires-python = ">=3.11"
+dependencies = [
+    "matplotlib>=3.10.3",
+    "numpy>=2.3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.4.1",
+    "pytest-cov>=6.2.1",
+    "pytest-mock>=3.14.1",
+    "black>=25.1.0",
+    "isort>=6.0.1",
+    "flake8>=7.2.0",
+    "requests>=2.32.4",
+    "pandas>=2.3.0",
+    "pytz>=2025.2",
+    "influxdb>=5.3.2",
+    "pyfolio-reloaded>=0.9.9",
+    "statsmodels>=0.14.4",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
