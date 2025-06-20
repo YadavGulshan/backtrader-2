@@ -41,3 +41,4 @@ from .logreturnsrolling import *
 
 from .calmar import *
 from .periodstats import *
+from .trade_metrics import *
