@@ -120,36 +120,79 @@ Development and Dependency Management
 
 This project uses ``uv`` for fast and robust dependency management. The dependencies are defined in ``pyproject.toml`` and locked in ``uv.lock`` for reproducible builds.
 
+**Prerequisites**
+
+- Python >= 3.11
+- ``uv`` package manager. Install from the `uv installation guide <https://docs.astral.sh/uv/getting-started/installation/>`_.
+
 **Initial Setup**
 
-1. Ensure ``uv`` is installed. See the `uv installation guide <https://docs.astral.sh/uv/getting-started/installation/>`_.
+1. Clone the repository and navigate to the project directory.
 
-2. Create the virtual environment:
+2. Create and activate the virtual environment:
    ::
 
      uv venv
+     source .venv/bin/activate.fish  # For fish shell
+     # or
+     source .venv/bin/activate       # For bash/zsh
+     # or on Windows
+     .venv\Scripts\activate
 
-3. Activate the environment and install dependencies:
+3. Install the project in development mode with all dependencies:
    ::
 
-     source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-     uv sync
+     uv sync --all-groups
      uv pip install -e .
 
 **Managing Dependencies**
 
-- **Adding a dependency**: Use the ``uv add`` command. This will update ``pyproject.toml`` and ``uv.lock``.
+- **Adding a runtime dependency**:
   ::
 
     uv add <package-name>
+
+- **Adding a development dependency**:
+  ::
+
+    uv add --optional dev <package-name>
+
+- **Removing a dependency**:
+  ::
+
+    uv remove <package-name>
+    uv remove --optional dev <package-name>  # For dev dependencies
 
 - **Updating all dependencies**: To upgrade all packages to their latest compatible versions:
   ::
 
     uv lock --upgrade
-    uv sync
+    uv sync --all-groups
 
-  After updating, you should commit the changes to ``uv.lock`` to your version control.
+  After updating, commit the changes to ``uv.lock`` to version control.
+
+**Development Tools**
+
+The project includes several development tools configured in ``pyproject.toml``:
+
+- **Code formatting**: ``black`` and ``isort``
+- **Linting**: ``flake8``
+- **Testing**: ``pytest`` with coverage support
+- **Performance testing**: ``pytest-xdist`` for parallel test execution
+
+Run formatting and linting:
+::
+
+  black .
+  isort .
+  flake8 .
+
+Run tests:
+::
+
+  pytest
+  pytest --cov=backtrader  # With coverage
+  pytest -n auto           # Parallel execution
 
 Python 2/3 Support
 ==================
@@ -165,6 +208,8 @@ Installation
 ``backtrader`` is self-contained with no external dependencies (except if you
 want to plot)
 
+**For Users**
+
 From *pypi*:
 
   - ``pip install backtrader``
@@ -173,7 +218,13 @@ From *pypi*:
 
     If ``matplotlib`` is not installed and you wish to do some plotting
 
-.. note:: The minimum matplotlib version is ``1.4.1``
+.. note:: The minimum matplotlib version is ``3.10.3``
+
+**For Development**
+
+If you want to contribute or modify the code, follow the development setup in the
+`Development and Dependency Management`_ section above. This uses ``uv`` for better
+dependency management and development workflow.
 
 An example for *IB* Data Feeds/Trading:
 
@@ -204,3 +255,7 @@ X.Y.Z.I
   - Z: Revision version number. To be changed for documentation updates, small
     changes, small bug fixes
   - I: Number of Indicators already built into the platform
+
+
+====
+1. Do not run strategy if all the indicators/timeframes are not ready.

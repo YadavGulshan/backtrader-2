@@ -32,6 +32,11 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import backtrader as bt
 import backtrader.utils.flushfile
 from backtrader.metabase import ParamsBase
+import time
+try:
+    time_clock = time.process_time
+except:
+    time_clock = time.clock
 
 
 modpath = os.path.dirname(os.path.abspath(__file__))
@@ -39,6 +44,9 @@ dataspath = '../datas'
 datafiles = [
     '2006-day-001.txt',
     '2006-week-001.txt',
+    '2006-01-02-volume-min-001.txt',
+    '2006-min-005.txt',
+    'ticksample.csv'
 ]
 
 DATAFEED = bt.feeds.BacktraderCSVData
@@ -115,6 +123,95 @@ def runtest(datas,
                 cerebros.append(cerebro)
 
     return cerebros
+
+
+def create_multi_timeframe_data(base_data_index=2, timeframes=None):
+    """
+    Create multiple timeframe data feeds from a base dataset.
+    
+    Args:
+        base_data_index: Index of base data file (default 2 for minute data)
+        timeframes: List of timeframe configurations
+        
+    Returns:
+        List of data feeds for different timeframes
+    """
+    if timeframes is None:
+        timeframes = [
+            {'timeframe': bt.TimeFrame.Minutes, 'compression': 1},
+            {'timeframe': bt.TimeFrame.Minutes, 'compression': 5},
+            {'timeframe': bt.TimeFrame.Minutes, 'compression': 15},
+            {'timeframe': bt.TimeFrame.Minutes, 'compression': 30},
+            {'timeframe': bt.TimeFrame.Days, 'compression': 1},
+            {'timeframe': bt.TimeFrame.Weeks, 'compression': 1},
+        ]
+    
+    base_data = getdata(base_data_index)
+
+    cerebro_temp = bt.Cerebro()
+    cerebro_temp.adddata(base_data)
+    
+    data_feeds = []
+    data_feeds.append(base_data)
+    
+    for tf_config in timeframes[1:]:
+        resampled_data = cerebro_temp.resampledata(
+            base_data,
+            timeframe=tf_config['timeframe'],
+            compression=tf_config['compression']
+        )
+        data_feeds.append(resampled_data)
+    
+    return data_feeds, timeframes
+
+
+def measure_strategy_performance(strategy_class, data_feeds, timeframes=None, **strategy_kwargs):
+    """
+    Measure performance of a strategy with multiple data feeds.
+    
+    Args:
+        strategy_class: Strategy class to test
+        data_feeds: List of data feeds
+        timeframes: List of timeframe configurations for resampling
+        **strategy_kwargs: Additional strategy parameters
+        
+    Returns:
+        Dictionary with performance metrics
+    """
+    cerebro = bt.Cerebro()
+    
+    # Add base data first
+    cerebro.adddata(data_feeds[0])
+    
+    # If timeframes provided, resample for other timeframes
+    if timeframes and len(timeframes) > 1:
+        for i, tf_config in enumerate(timeframes[1:], 1):
+            if i < len(data_feeds):
+                resampled_data = cerebro.resampledata(
+                    data_feeds[i],
+                    timeframe=tf_config['timeframe'],
+                    compression=tf_config['compression']
+                )
+    else:
+        # Add remaining data feeds as-is
+        for data in data_feeds[1:]:
+            cerebro.adddata(data)
+    
+    cerebro.addstrategy(strategy_class, **strategy_kwargs)
+    cerebro.broker.setcash(10000.0)
+
+    start_time = time_clock()
+    strategies = cerebro.run(stdstats=False)
+    end_time = time_clock()
+    total_execution_time = end_time - start_time
+    
+    strategy = strategies[0]
+    return {
+        'total_execution_time': total_execution_time,
+        'strategy': strategy,
+        'final_portfolio_value': cerebro.broker.getvalue(),
+        'data_feeds_count': len(strategy.datas)
+    }
 
 
 class TestStrategy(bt.Strategy):
