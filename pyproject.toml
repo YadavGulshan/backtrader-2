@@ -5,12 +5,12 @@ description = "Python Backtesting library for trading strategies"
 readme = "README.rst"
 requires-python = ">=3.11"
 dependencies = [
-    "matplotlib>=3.10.3",
     "numpy>=2.3.0",
 ]
 
 [project.optional-dependencies]
 dev = [
+    "matplotlib>=3.10.3",
     "pytest>=8.4.1",
     "pytest-cov>=6.2.1",
     "pytest-mock>=3.14.1",
